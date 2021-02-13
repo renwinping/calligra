@@ -57,7 +57,7 @@ KPrConfigureSlideShowDialog::KPrConfigureSlideShowDialog( KPrDocument *document,
         ui.slidesComboBox->setCurrentIndex( index );
     }
 
-    connect( ui.editSlidesButton, SIGNAL(clicked()), this, SLOT(editCustomSlideShow()) );
+    connect( ui.editSlidesButton, &QAbstractButton::clicked, this, &KPrConfigureSlideShowDialog::editCustomSlideShow );
 }
 
 QString KPrConfigureSlideShowDialog::activeCustomSlideShow() const
