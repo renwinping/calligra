@@ -32,6 +32,7 @@ ParagraphLayout::ParagraphLayout(QWidget *parent)
     connect(widget.justify, SIGNAL(toggled(bool)), this, SLOT(slotAlignChanged()));
     connect(widget.left, SIGNAL(toggled(bool)), this, SLOT(slotAlignChanged()));
     connect(widget.keepTogether, SIGNAL(stateChanged(int)), this, SLOT(keepTogetherChanged()));
+    connect(widget.keepWithNext, SIGNAL(stateChanged(int)), this, SLOT(keepWithNextChanged()));
     connect(widget.breakAfter, SIGNAL(stateChanged(int)), this, SLOT(breakAfterChanged()));
     connect(widget.breakBefore, SIGNAL(stateChanged(int)), this, SLOT(breakBeforeChanged()));
     connect(widget.threshold, SIGNAL(valueChanged(int)), this, SLOT(thresholdValueChanged()));
@@ -66,6 +67,12 @@ void ParagraphLayout::keepTogetherChanged()
    emit parStyleChanged();
 }
 
+void ParagraphLayout::keepWithNextChanged()
+{
+    m_keepWithNextInherited = false;
+    emit parStyleChanged();
+}
+
 void ParagraphLayout::breakBeforeChanged()
 {
     m_breakBeforeInherited = false;
@@ -91,11 +98,13 @@ void ParagraphLayout::setDisplay(KoParagraphStyle *style, bool directFormattingM
 
     m_alignmentInherited = directFormattingMode|| !style->hasProperty(QTextFormat::BlockAlignment);
     m_keepTogetherInherited = directFormattingMode|| !style->hasProperty(QTextFormat::BlockNonBreakableLines);
+    m_keepWithNextInherited = directFormattingMode || !style->hasProperty(KoParagraphStyle::KeepWithNext);
     m_breakAfterInherited = directFormattingMode|| !style->hasProperty(KoParagraphStyle::BreakAfter);
     m_breakBeforeInherited = directFormattingMode|| !style->hasProperty(KoParagraphStyle::BreakBefore);
     m_orphanThresholdInherited = directFormattingMode|| !style->hasProperty(KoParagraphStyle::OrphanThreshold);
 
     widget.keepTogether->setChecked(style->nonBreakableLines());
+    widget.keepWithNext->setChecked(style->keepWithNext());
     widget.breakBefore->setChecked(style->breakBefore());
     widget.breakAfter->setChecked(style->breakAfter());
 
@@ -117,23 +126,26 @@ void ParagraphLayout::save(KoParagraphStyle *style)
         style->setAlignment(align);
     }
 
-        if (!m_keepTogetherInherited) {
-            style->setNonBreakableLines(widget.keepTogether->isChecked());
-        }
-        if (!m_breakBeforeInherited) {
-            if (widget.breakBefore->isChecked())
-                style->setBreakBefore(KoText::PageBreak);
-            else
-                style->setBreakBefore(KoText::NoBreak);
-        }
-        if (!m_breakAfterInherited) {
-            if (widget.breakAfter->isChecked())
-                style->setBreakAfter(KoText::PageBreak);
-            else
-                style->setBreakAfter(KoText::NoBreak);
-        }
+    if (!m_keepTogetherInherited) {
+        style->setNonBreakableLines(widget.keepTogether->isChecked());
+    }
+    if (!m_keepWithNextInherited) {
+        style->setKeepWithNext(widget.keepWithNext->isChecked());
+    }
+    if (!m_breakBeforeInherited) {
+        if (widget.breakBefore->isChecked())
+            style->setBreakBefore(KoText::PageBreak);
+        else
+            style->setBreakBefore(KoText::NoBreak);
+    }
+    if (!m_breakAfterInherited) {
+        if (widget.breakAfter->isChecked())
+            style->setBreakAfter(KoText::PageBreak);
+        else
+            style->setBreakAfter(KoText::NoBreak);
+    }
 
-        if (!m_orphanThresholdInherited) {
-            style->setOrphanThreshold(widget.threshold->value());
-        }
+    if (!m_orphanThresholdInherited) {
+        style->setOrphanThreshold(widget.threshold->value());
+    }
 }
